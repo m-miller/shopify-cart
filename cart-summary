@@ -1,0 +1,294 @@
+<div class="card border-0 cart_sunmmary_card">
+    <div class="card-header">
+        <h3>Order Summary</h3>
+    </div>
+    <div class="card-body">
+        <ul id="cart_info_list">
+            <li>
+                <div class="row ">
+                    <div class="col">
+                        Subtotal:
+                    </div>
+                    <div class="col text-right" id="cart_item_subtotal">
+                        ${{cart.items_subtotal_price | money_without_currency}}
+                    </div>
+                </div>
+            </li>
+            <li>
+                <div class="row ">
+                    <div class="col">
+                        Shipping:
+                    </div>
+                    <div class="col text-right" id="shipping-price-holder">
+                        <div class="col text-right">
+                          TBD
+                        </div>
+                        
+                    </div>
+                  {% render 'pig' %}
+                  	<div class="col" id="fs-message"></div>
+                  
+              </div>
+            </li>
+            <li>
+                <div class="row ">
+                    <div class="col">
+                        <div class="row">
+                            <div class="col-6 col-lg-6" style="font-size: 0.75rem">
+                                Estimated Delivery Date:
+                            </div>
+                            <div class="col-6 col-md-12 col-lg-6 text-right text-md-left text-lg-right" style="font-size: 0.75rem" id="expectedDeliveryDate">
+                            </div>
+                        </div>
+                      
+                       <div class="d-flex mt-3 align-items-center flex-column" style="justify-content: center;">
+                        <p style="color:#e24301;text-align: center;">Due to the high order volumes some deliveries may be delayed.</p>
+                         <!-- <h4>Delivery Schedule</h4>
+    						<table id="shipping">
+     					 		<thead>
+      								<tr><th>Order Day</th><th>Delivery Day</th></tr>
+      							</thead>
+      							<tbody>
+      								<tr><td>Sunday</td><td>Thursday</td></tr>
+      								<tr><td>Monday</td><td>Thursday</td></tr>
+      								<tr><td>Tuesday</td><td>Friday</td></tr>
+      								<tr><td>Wednesday</td><td>Wednesday</td></tr>
+      								<tr><td>Thursday</td><td>Wednesday</td></tr>
+      								<tr><td>Friday</td><td>Wednesday</td></tr>
+      								<tr><td>Saturday</td><td>Thursday</td></tr>
+      							</tbody>
+    						</table> -->
+  						</div>
+  						<div class="d-flex justify-center mt-2 mb-2" style="justify-content: center; font-size: 0.81rem;">
+    						More questions? See our&nbsp;<a href="https://belcampo.com/pages/faq#faq_4">FAQs</a>
+  						</div>
+
+                        <div class="row">     
+                            <div class="col">
+                                <p class="text-secondary small_text">You will receive your deliveries on Wednesday, Thursday and Friday. In special circumstances your order may arrive (1) day early. If you do not receive your full-order initially, the rest will be shipped separately and we will reach out to you with an update.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+       {%- comment -%}
+            {% if preorder %}
+            <input type="hidden" id="preorder_cart" name="attributes[__preorder_cart]" value="Cart contains preorder items."/>
+            {% endif %}
+            {%- endcomment -%} 
+            <li>
+                <div class="row ">
+                    <div class="col">
+                        Total:
+                    </div>
+                    <div class="col text-right" id="cart_item_total">
+                        ${{cart.total_price | money_without_currency}}
+                    </div>
+                    <div class="col">
+                  <label for="CartNote">Gift Message</label>
+<textarea name="note" id="CartNote">{{ cart.note }}&#13;&#10;&#13;&#10;</textarea>
+                      <p>&nbsp;</p>
+                  </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<style>
+  #fs-message.col {
+  	flex-basis: unset;
+    color:#e24301;
+    margin-top:26px;
+    margin-bottom:6px;
+    font-size:16px;
+    font-family:'Alpha-Beta';
+    line-height: 1;
+    text-align:center;
+  }
+  
+  ul.shipping-tiers {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+  }
+  .cart_sunmmary_card .card-body #cart_info_list ul.shipping-tiers li {
+    padding: 0;
+    border: none;
+    font-size: 0.81rem;
+    text-align: center;
+  }
+</style>
+
+<script>
+    
+  window.onload = function() {
+                
+    const cartTotal = {{cart.total_price | money_without_currency}}
+    const fSPrice = 99.00;
+    const fSNeeded = (fSPrice - cartTotal).toFixed(2)
+    const congratsMessage = `Congratulations!
+		Your shipping is free!`
+
+    // svg consts
+    const filter = document.getElementById("fillpig");
+	const svg = document.getElementById("svg5");
+
+    //console.log(congratsMessage)
+	//Set totalCost Eventlistener to trigger FS update
+    const cartTotalContainer = document.getElementById('cart_item_total')
+    cartTotalContainer.addEventListener('DOMSubtreeModified', fSUpdate );
+    const removeFromCart = document.querySelectorAll('remove-from-cart')
+    removeFromCart.forEach( (item) => {item.onclick( () => {fSUpdate()})})
+    //console.log(removeFromCart)
+    
+    //Update FS messageon Total Cost update
+    function fSUpdate() {
+      let currentTotal = parseFloat(cartTotalContainer.innerHTML.trim().slice(1))
+      let fSNeeded = fSPrice - +currentTotal;  
+        //FS message update output
+      	//console.log(` current total: ${parseInt(currentTotal).toFixed(2)}`)
+ 		//console.log('total less then 0')
+//         console.log(currentTotal)
+      
+     // update svg cow here
+      let pigtotal = parseFloat(fSNeeded/100);
+      if ( pigtotal <= 0 ) { pigtotal = 0 };   
+      svg.setAttribute("width","180");
+      filter.setAttribute("dy", pigtotal);
+       
+      
+        if(parseInt(fSNeeded) > 0 && parseInt(fSNeeded) < fSPrice ) {
+          document.getElementById('fs-message').innerText = `Add $${fSNeeded.toFixed(2)} to get free shipping!"`
+          document.getElementById('shipping-price-holder').innerText = 'TBD'
+        } 
+      	if(currentTotal == 0 || currentTotal < 0) {
+          document.getElementById('fs-message').innerText = ''
+          document.getElementById('shipping-price-holder').innerText = 'TBD'
+          console.log('total less then 0')
+        }
+      	if (currentTotal > fSPrice )  {
+          document.getElementById('fs-message').innerText = congratsMessage
+          document.getElementById('shipping-price-holder').innerText = 'FREE!'
+        } 
+      
+//       console.log('fSUpdate() fired!')
+    }
+    fSUpdate();
+
+}
+ 
+</script>
+
+
+{%- comment -%}
+<script>
+
+    function getFirstDate(startDate) {
+      	console.log('cart_summary_card')
+        if (startDate.format('d') == 1) {
+            if (startDate.format('H') < 12) {
+                startDate = startDate.add(3, 'd')
+            }  else {
+                startDate = startDate.add(4, 'd')
+            }
+        } else if (startDate.format('d') == 2) {
+            if (startDate.format('H') < 12) {
+                startDate = startDate.add(3, 'd')
+            }  else {
+                startDate = startDate.add(7, 'd')
+            }
+        } else if (startDate.format('d') == 3) {
+            if (startDate.format('H') < 12) {
+                startDate = startDate.add(6, 'd')
+            }  else {
+                startDate = startDate.add(6, 'd')
+            }
+        } else if (startDate.format('d') == 4) {
+            if (startDate.format('H') < 12) {
+                startDate = startDate.add(5, 'd')
+            }  else {
+                startDate = startDate.add(6, 'd')
+            }
+        } else if (startDate.format('d') == 5) {
+            if (startDate.format('H') < 12) {
+                startDate = startDate.add(5, 'd')
+            }  else {
+                startDate = startDate.add(6, 'd')
+            }
+        } else if (startDate.format('d') == 6) {
+            if (startDate.format('H') < 12) {
+                startDate = startDate.add(5, 'd')
+            }  else {
+                startDate = startDate.add(5, 'd')
+            }
+        } else if (startDate.format('d') == 0) {
+            if (startDate.format('H') < 12) {
+                startDate = startDate.add(4, 'd')
+            }  else {
+                startDate = startDate.add(4, 'd')
+            }
+        }
+        return startDate.format('ddd, MMMM D, YYYY');
+    }
+  
+
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    };
+    $(document).ready( function() {
+
+        var date = getUrlParameter('date');
+        var time = getUrlParameter('hour');
+        if (date) {
+            startDate = dayjs(date);
+            if (time) {
+                startDate =  startDate.set('h', time);
+            }
+            var finalStartDate = getFirstDate(startDate);
+          	
+        } else {
+            var startDate = dayjs();
+            var finalStartDate = getFirstDate(startDate);
+        }
+
+
+        if ($('#cart_datepicker').val().length == 0) {
+            $('#cart_datepicker').attr('value', finalStartDate);
+        } else {
+            var setDate = $('#cart_datepicker').val();
+            if (dayjs(setDate) < dayjs(finalStartDate)) {
+                $('#cart_datepicker').attr('value', finalStartDate);;
+            }
+        }
+        $("#cart_datepicker").datepicker( {
+            minDate: +3,
+            beforeShowDay: function(date) {
+                var day = date.getDay();
+                if (dayjs(date).isAfter(dayjs('11/10/2020')) && day == 3) {
+                    return [false]
+                }
+                if (day == 0 || day == 1 || day == 6 ) {
+                    return [false]
+                } else {
+                    var blackoutDates = ['11/26/2020', '12/25/2020', '1/1/2021'];
+                    if (blackoutDates.includes(dayjs(date).format('M/D/YYYY'))) {
+                        return [false]
+                    }
+                        return [true]
+                }
+            },
+            minDate: finalStartDate,
+            defaultDate: finalStartDate,
+            dateFormat: 'D, MM d, yy',
+            onSelect: function(dateText, datePicker) {
+                $(this).attr('value', dateText);
+            }
+        } );
+
+    });
+</script>
+{%- endcomment -%}
